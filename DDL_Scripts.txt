@@ -1,0 +1,175 @@
+CREATE SCHEMA Police_Case_Management_System;
+SET SEARCH_PATH TO Police_Case_Management_System;
+
+CREATE TABLE Station(
+	StationID INTEGER PRIMARY KEY, 
+	StationName VARCHAR(25), 
+	Location VARCHAR(50)
+	--DSP_ID INTEGER
+);
+
+
+CREATE TABLE Officer(
+	OfficerID INTEGER PRIMARY KEY, 
+	FName VARCHAR(20), 
+	Minit CHARACTER, 
+	LName VARCHAR(20), 
+	Email VARCHAR(25), 
+	Residence_Contact NUMERIC(10, 0), 
+	MobileNo NUMERIC(10, 0), 
+	DoB DATE, 
+	DateOfJoin DATE, 
+	Rank INTEGER, 
+	Salary FLOAT, 
+	Gender CHARACTER, 
+	StationID INTEGER REFERENCES Station(StationID)
+);
+
+ALTER TABLE Station 
+	ADD DSP_ID INTEGER REFERENCES Officer(OfficerID);
+
+CREATE TABLE CrimeRegister(
+	CrimeID INTEGER PRIMARY KEY,
+	StationID INTEGER NOT NULL,
+	DateOfCrime DATE, 
+	TimeOfCrime TIME, 
+	DateOfReport DATE, 
+	CrimeType VARCHAR(20),
+	Challan FLOAT,
+	Status VARCHAR(10),
+	Description VARCHAR(50), 
+	OfficerID INTEGER NOT NULL, 
+	FOREIGN KEY (StationID) REFERENCES Station(StationID), 
+	FOREIGN KEY (OfficerID) REFERENCES Officer(OfficerID)
+);
+
+CREATE TABLE Equipment(
+	EquipID INTEGER PRIMARY KEY, 
+	EquipName VARCHAR(20), 
+	EquipType VARCHAR(20), 
+	LastIssueDate DATE, 
+	Status VARCHAR(20),
+	Condition VARCHAR(20)
+);
+
+CREATE TABLE Accused(
+	AccusedID INTEGER PRIMARY KEY, 
+	FName VARCHAR(20), 
+	Minit CHARACTER, 
+	LName VARCHAR(20), 
+	Phone NUMERIC(10, 0), 
+	Gender VARCHAR(5), 
+	DoB DATE, 
+	IDType VARCHAR(20), 
+	IDNumber VARCHAR(20),
+	Address VARCHAR(100)
+);
+
+CREATE TABLE Victim(
+	VictimID INTEGER PRIMARY KEY, 
+	FName VARCHAR(20), 
+	MName VARCHAR(20), 
+	LName VARCHAR(20), 
+	Phone NUMERIC(10, 0), 
+	Gender VARCHAR(5), 
+	DoB DATE, 
+	IDType VARCHAR(20), 
+	IDNumber VARCHAR(20),
+	Address VARCHAR(100)
+);
+
+CREATE TABLE Witness(
+	CrimeID INTEGER, 
+	witnessName VARCHAR(20), 
+	Contact NUMERIC(10, 0), 
+	IDNumber VARCHAR(20), 
+	IDType VARCHAR(20), 
+	Statement VARCHAR(125), 
+	PRIMARY KEY (witnessName, CrimeID), 
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Complainer(
+	Name VARCHAR(20), 
+	CrimeID INTEGER NOT NULL, 
+	Phone NUMERIC(10, 0), 
+	Gender VARCHAR(5), 
+	DoB DATE, 
+	IDType VARCHAR(20), 
+	IDNumber VARCHAR(20),
+	Address VARCHAR(100),
+	PRIMARY KEY (Fname, CrimeID), 
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Evidence(
+	EvidenceID INTEGER PRIMARY KEY,
+	StationID INTEGER,
+	CrimeID INTEGER,
+	EvidenceType VARCHAR(25),
+	Description VARCHAR(75),  
+	FOREIGN KEY (StationID) REFERENCES Station(StationID),
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Arrested(
+	ArrestID INTEGER PRIMARY KEY, 
+	FName VARCHAR(20), 
+	Minit VARCHAR(20), 
+	LName VARCHAR(20), 
+	Contact NUMERIC(10, 0),
+	BailStatus CHARACTER, 
+	BailAmount INTEGER, 
+	BailedBy VARCHAR(20),
+	ReleaseDate DATE, 
+	StationID INTEGER NOT NULL,
+	CrimeID INTEGER NOT NULL,
+	FOREIGN KEY (StationID) REFERENCES Station(StationID),
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Section(
+	SectionID INTEGER PRIMARY KEY, 
+	Description VARCHAR(100)
+);
+
+CREATE TABLE Arrested_Under(
+	ArrestID INTEGER, 
+	SectionID INTEGER, 
+	PRIMARY KEY (ArrestID, SectionID),
+	FOREIGN KEY (SectionID) REFERENCES Section(SectionID),
+	FOREIGN KEY (ArrestID) REFERENCES Arrested(ArrestID)
+);
+
+CREATE TABLE Crime_Lies_Under(
+	SectionID INTEGER, 
+	CrimeID INTEGER, 
+	PRIMARY KEY (SectionID, CrimeID),
+	FOREIGN KEY (StationID) REFERENCES Station(StationID),
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Accused_PartOf(
+	AccusedID INTEGER, 
+	CrimeID INTEGER, 
+	PRIMARY KEY (AccusedID, CrimeID),
+	FOREIGN KEY (AccusedID) REFERENCES Accused(AccusedID),
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Victim_PartOf(
+	VictimID INTEGER, 
+	CrimeID INTEGER, 
+	PRIMARY KEY (VictimID, CrimeID),
+	FOREIGN KEY (VictimID) REFERENCES Victim(VictimID),
+	FOREIGN KEY (CrimeID) REFERENCES CrimeRegister(CrimeID)
+);
+
+CREATE TABLE Has_Issued(
+	OfficerID INTEGER, 
+	EquipID INTEGER,
+	PRIMARY KEY (OfficerID, EquipID),
+	issuedate date, 
+	FOREIGN KEY (OfficerID) REFERENCES Officer(OfficerID),
+	FOREIGN KEY (EquipID) REFERENCES Equipment(EquipID)
+);
